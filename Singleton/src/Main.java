@@ -3,6 +3,7 @@ import printer.*;
 import java.lang.reflect.Method;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -11,7 +12,7 @@ import java.util.concurrent.Executors;
     돌려보면 Lazy Initialization은 Thread-safe하지 않다는 것을 볼 수 있다.
  */
 public class Main {
-    public static void main(String[] args) throws NoSuchMethodException, InterruptedException {
+    public static void main(String[] args) throws NoSuchMethodException, InterruptedException, ExecutionException {
         //Reflection 연습겸 Class 객체 사용해서 map을 만들었다
         Map<Class<?>, Object[]> printerMap = new LinkedHashMap<>();
         printerMap.put(EagerPrinter.class, new EagerPrinter[10]);
@@ -45,9 +46,14 @@ public class Main {
                     }
                 });
             }
-            //sleep을 하지 않으면 제대로 안 돌아간다..
+            /*
+            sleep을 하지 않으면 제대로 안 돌아간다..
+            -> shutdown()은 non-blocking 이었다... Future의 get()이 blocking 역할을 해줌.
+            -> Thread.sleep은 메인쓰레드 진행을 멈춰서 자식쓰레드들이 다 돌았기 때문에 에러가 안난거라고 예상
+            -> 근데 get()을 붙히면 blocking을 해줘서 LazyPrinter가 계속 thread-safe처럼 나온다...
+            -> 때문에 그냥 thread.sleep을 써서 LazyPrinter가 thread-safe하지 않은 모습을 봐야겠다.
+            */
             Thread.sleep(100);
-
             for (Object o : e.getValue()) {
                 //enum배열은 각 요소의 주소값들을 참조할 수가 없어서 주소값 비교만 했다.
                 if(o.equals(EnumPrinter.PRINTER)) {
@@ -60,5 +66,6 @@ public class Main {
         }
         //쓰레드 풀 끄기
         printService.shutdown();
+
     }
 }
