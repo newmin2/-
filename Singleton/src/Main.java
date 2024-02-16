@@ -1,8 +1,7 @@
 import printer.*;
 
 import java.lang.reflect.Method;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -64,6 +63,7 @@ public class Main {
             }
             System.out.println('\n');
         }
+
         //쓰레드 풀 끄기
         printService.shutdown();
 
